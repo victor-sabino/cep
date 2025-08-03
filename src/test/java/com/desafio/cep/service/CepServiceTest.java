@@ -1,9 +1,8 @@
-package com.desafio.cep;
+package com.desafio.cep.service;
 
 import com.desafio.cep.model.CepLog;
 import com.desafio.cep.model.CepResponse;
 import com.desafio.cep.repository.CepLogRepository;
-import com.desafio.cep.service.CepService;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
