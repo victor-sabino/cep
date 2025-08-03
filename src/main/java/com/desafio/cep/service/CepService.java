@@ -10,6 +10,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import java.time.LocalDateTime;
+
 @Service
 public class CepService {
     private final WebClient webClient;
@@ -28,7 +30,7 @@ public class CepService {
                 .bodyToMono(CepResponse.class)
                 .publishOn(Schedulers.boundedElastic())
                 .doOnNext(response ->
-                        repository.save(new CepLog(null, cep, response.getLogradouro()))
+                        repository.save(new CepLog(null, cep, response.getLogradouro(), LocalDateTime.now()))
                 );
     }
 }
