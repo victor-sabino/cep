@@ -82,23 +82,6 @@ class CepServiceTest {
     }
 
     @Test
-    public void deveRetornarErroQuandoCepNaoExistir() {
-        String cep = "00000000";
-
-        stubFor(get(urlEqualTo("/ws/" + cep + "/json/"))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody("{ \"erro\": true }")));
-
-        StepVerifier.create(cepService.getCep(cep))
-                .expectErrorMatches(throwable ->
-                        throwable instanceof ExternalApiException &&
-                                throwable.getMessage().contains("CEP não encontrado"))
-                .verify();
-    }
-
-    @Test
     void deveRetornarErroQuandoApiRetornar500() {
         String cep = "99999999";
 

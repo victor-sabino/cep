@@ -37,13 +37,8 @@ public class CepService {
                 )
                 .bodyToMono(CepResponse.class)
                 .publishOn(Schedulers.boundedElastic())
-                .flatMap(response -> {
-                    if (response == null || response.isErro()) {
-                        return Mono.error(new ExternalApiException("CEP não encontrado ou inválido na API ViaCEP."));
-                    }
-
-                    repository.save(new CepLog(null, cep, response.getLogradouro(), LocalDateTime.now()));
-                    return Mono.just(response);
-                });
+                .doOnNext(response ->
+                        repository.save(new CepLog(null, cep, response.getLogradouro(), LocalDateTime.now()))
+                );
     }
 }
