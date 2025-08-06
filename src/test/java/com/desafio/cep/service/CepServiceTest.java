@@ -1,5 +1,6 @@
 package com.desafio.cep.service;
 
+import com.desafio.cep.exception.ExternalApiException;
 import com.desafio.cep.model.CepLog;
 import com.desafio.cep.model.CepResponse;
 import com.desafio.cep.repository.CepLogRepository;
@@ -7,8 +8,10 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -16,6 +19,8 @@ import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.verify;
 
+
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CepServiceTest {
 
     private WireMockServer wireMockServer;
@@ -74,5 +79,38 @@ class CepServiceTest {
         assertNotNull(response);
         assertNull(response.getLogradouro());
         verify(repository, never()).save(any(CepLog.class));
+    }
+
+    @Test
+    public void deveRetornarErroQuandoCepNaoExistir() {
+        String cep = "00000000";
+
+        stubFor(get(urlEqualTo("/ws/" + cep + "/json/"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{ \"erro\": true }")));
+
+        StepVerifier.create(cepService.getCep(cep))
+                .expectErrorMatches(throwable ->
+                        throwable instanceof ExternalApiException &&
+                                throwable.getMessage().contains("CEP não encontrado"))
+                .verify();
+    }
+
+    @Test
+    void deveRetornarErroQuandoApiRetornar500() {
+        String cep = "99999999";
+
+        stubFor(get(urlEqualTo("/ws/" + cep + "/json/"))
+                .willReturn(aResponse()
+                        .withStatus(500)
+                        .withBody("Erro interno da API externa")));
+
+        StepVerifier.create(cepService.getCep(cep))
+                .expectErrorMatches(throwable ->
+                        throwable instanceof ExternalApiException &&
+                                throwable.getMessage().contains("Erro interno"))
+                .verify();
     }
 }

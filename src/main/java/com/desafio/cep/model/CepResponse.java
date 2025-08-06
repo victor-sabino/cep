@@ -6,5 +6,6 @@ import lombok.Data;
 public class CepResponse {
     private String cep;
     private String logradouro;
+    private boolean erro;
 
 }
